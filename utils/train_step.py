@@ -79,18 +79,26 @@ def train_model(
             # Validation phase
             model.eval()
             
-            # --- Get validation batch ---
-            val_X, val_Y = get_batch(val_data, batch_size, seq_len)
-            val_X, val_Y = val_X.to(device), val_Y.to(device)
-            val_logits, val_loss = model(val_X, val_Y)
-            results["val_loss"].append(val_loss.item())
+            total_val_loss = 0
+            total_val_acc = 0
+            val_iter = 100
+            for _ in range(val_iter):
+                # --- Get validation batch ---
+                val_X, val_Y = get_batch(val_data, batch_size, seq_len)
+                val_X, val_Y = val_X.to(device), val_Y.to(device)
+                val_logits, val_loss = model(val_X, val_Y)
+                total_val_loss += val_loss.item()
+                
 
-            with torch.no_grad():
-                val_preds = torch.argmax(val_logits, dim=-1)
-                val_preds = val_preds.view(batch_size, seq_len) # Reshape val_preds to match val_Y
-                val_acc = (val_preds == val_Y).float().mean()
-                val_acc_values = val_acc.item()  # convert tensor scalar to Python float
-                results["val_acc"].append(val_acc_values)
+                with torch.no_grad():
+                    val_preds = torch.argmax(val_logits, dim=-1)
+                    val_preds = val_preds.view(batch_size, seq_len) # Reshape val_preds to match val_Y
+                    val_acc = (val_preds == val_Y).float().mean()
+                    total_val_acc += val_acc.item()  # convert tensor scalar to Python float
+                    
+
+            results["val_loss"].append(total_val_loss/val_iter) # Average loss over all batches
+            results["val_acc"].append(total_val_acc/val_iter)                         # Average acc over all batches
 
             elapsed = time.time() - start_time
             results["val_time"].append(elapsed)

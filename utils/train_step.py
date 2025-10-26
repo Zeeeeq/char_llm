@@ -13,8 +13,7 @@ def train_model(
         "batch_size": 128,
         "seq_len": 64,
         "niter": 1000,
-    },
-    print_every: int = 100,
+    }
 ):
     """
     Train a given model on the provided training and validation loaders.
@@ -39,6 +38,9 @@ def train_model(
         "train_time": [],
         "val_time": []
     }
+
+    # Initialize print_every based on niter. ideally, larger values of niter lead to less frequent printing
+    print_every = max(100, hyperparams["niter"] // 10)
 
     batch_size, seq_len, niter = hyperparams["batch_size"], hyperparams["seq_len"], hyperparams["niter"]
 
@@ -72,33 +74,29 @@ def train_model(
         elapsed = time.time() - start_time
         results["train_time"].append(elapsed)
 
+        # Evaluate on validation set every few iterations
         if (iter + 1) % print_every == 0 or iter == 0:
-            print(f"[Iteration {iter+1}/{niter} | Time {elapsed:5.1f}s] \t Train Loss: {loss.item():.4f} | Train Acc: {100*acc:.1f}%")
+            # Validation phase
+            model.eval()
+            
+            # --- Get validation batch ---
+            val_X, val_Y = get_batch(val_data, batch_size, seq_len)
+            val_X, val_Y = val_X.to(device), val_Y.to(device)
+            val_logits, val_loss = model(val_X, val_Y)
+            results["val_loss"].append(val_loss.item())
 
-    print(f"\n--- Starting Validation Phase ---\n")
+            with torch.no_grad():
+                val_preds = torch.argmax(val_logits, dim=-1)
+                val_preds = val_preds.view(batch_size, seq_len) # Reshape val_preds to match val_Y
+                val_acc = (val_preds == val_Y).float().mean()
+                val_acc_values = val_acc.item()  # convert tensor scalar to Python float
+                results["val_acc"].append(val_acc_values)
 
-    for iter in range(niter):
-        # Validation phase
-        model.eval()
-        
-        # --- Get validation batch ---
-        val_X, val_Y = get_batch(val_data, batch_size, seq_len)
-        val_X, val_Y = val_X.to(device), val_Y.to(device)
-        val_logits, val_loss = model(val_X, val_Y)
-        results["val_loss"].append(val_loss.item())
+            elapsed = time.time() - start_time
+            results["val_time"].append(elapsed)
 
-        with torch.no_grad():
-            val_preds = torch.argmax(val_logits, dim=-1)
-            val_preds = val_preds.view(batch_size, seq_len) # Reshape val_preds to match val_Y
-            val_acc = (val_preds == val_Y).float().mean()
-            val_acc_values = val_acc.item()  # convert tensor scalar to Python float
-            results["val_acc"].append(val_acc_values)
-
-        elapsed = time.time() - start_time
-        results["val_time"].append(elapsed)
-
-        if (iter + 1) % print_every == 0 or iter == 0:
-            print(f"[Iteration {iter+1}/{niter} | Time {elapsed:5.1f}s] \t Validation Loss: {val_loss.item():.4f} | Validation Acc: {100*val_acc:.1f}%")
+            print(f"[Iteration {iter+1}/{niter} | Time {elapsed:5.1f}s]")
+            print(f"Train Loss: {loss.item():.4f} | Train Acc: {100*acc:.1f}% \t Validation Loss: {val_loss.item():.4f} | Validation Acc: {100*val_acc:.1f}%\n")
 
     print(f"===== Finished Training {model.__class__.__name__} =====\n")
 

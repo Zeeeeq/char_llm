@@ -22,8 +22,8 @@ class Head(nn.Module):
     B, T, C = x.shape
     k = self.key(x)      # (B,T,head_size)
     q = self.query(x)    # (B,T,head_size)
-    wei = q @ k.transpose(-2, -1) * (C ** -0.5)  # scaled dot-product attention; (B, T, head_size) @ (B, head_size, T) --> (B, T, T)
-    wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) #
+    wei = q @ k.transpose(-2, -1) * (k.size(-1) ** -0.5)  # scaled dot-product attention; (B, T, head_size) @ (B, head_size, T) --> (B, T, T)
+    wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # causal masking so that characters can only attend to previous characters in the sequence
     wei = F.softmax(wei, dim=-1)
     wei = self.dropout(wei)
     v = self.value(x)    # (B,T,head_size)
@@ -99,8 +99,8 @@ class CharTransformerLarge(nn.Module):
 
   def forward(self, idx, targets=None):
     B, T = idx.shape
-    tok_emb = self.token_embedding_table(idx)
-    pos_emb = self.position_embedding_table(torch.arange(T, device=idx.device)) # Provide positional context of characters
+    tok_emb = self.token_embedding_table(idx) # Token embeddings of shape (B, T, C)
+    pos_emb = self.position_embedding_table(torch.arange(T, device=idx.device)) # Provide positional context of characters; (T, C)
     x = tok_emb + pos_emb
     x = self.blocks(x)
     x = self.ln_f(x)

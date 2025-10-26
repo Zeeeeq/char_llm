@@ -1,4 +1,5 @@
 import torch
+import pickle
 
 def get_batch(text_input, B, T):
   """Create a random batch of data from text_input (train_data or test_data).
@@ -25,3 +26,10 @@ def encode(text, ctoi):
 def decode(indices, itoc):
     """Decode a list of integers back to text."""
     return ''.join([itoc[i] for i in indices])
+
+def load_data(encoded_path='data/encoded.pkl', device='cpu'):
+    with open(encoded_path, 'rb') as f:
+        data = pickle.load(f)
+    train = torch.tensor(data['train'], dtype=torch.long)
+    test = torch.tensor(data['val'], dtype=torch.long)
+    return train, test, data['ctoi'], data['itoc'], data['vocab_size']

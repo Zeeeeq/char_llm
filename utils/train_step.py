@@ -1,9 +1,10 @@
 import time
 import torch
+import numpy as np
+from utils.data_loader import get_batch
 
 def train_model(
     model,
-    get_batch,
     train_data,
     val_data,
     optimizer,
@@ -59,8 +60,8 @@ def train_model(
             preds = torch.argmax(logits, dim=-1)
             preds = preds.view(batch_size, seq_len) # Reshape preds to match Y
             acc = (preds == Y).float().mean()
-            results["train_acc"].append(acc)
-            # acc_last = (preds[:, -1] == Y[:, -1]).float().mean()
+            acc_values = acc.item()  # convert tensor scalar to Python float
+            results["train_acc"].append(acc_values)
         
         # --- Optimization step ---
         optimizer.zero_grad()
@@ -71,7 +72,7 @@ def train_model(
         elapsed = time.time() - start_time
         results["train_time"].append(elapsed)
 
-        if (iter + 1) % print_every == 0:
+        if (iter + 1) % print_every == 0 or iter == 0:
             print(f"[Iteration {iter+1}/{niter} | Time {elapsed:5.1f}s] \t Train Loss: {loss.item():.4f} | Train Acc: {100*acc:.1f}%")
 
     print(f"\n--- Starting Validation Phase ---\n")
@@ -90,13 +91,13 @@ def train_model(
             val_preds = torch.argmax(val_logits, dim=-1)
             val_preds = val_preds.view(batch_size, seq_len) # Reshape val_preds to match val_Y
             val_acc = (val_preds == val_Y).float().mean()
-            results["val_acc"].append(val_acc)
-            # val_acc_last = (val_preds[:, -1] == val_Y[:, -1]).float().mean()
+            val_acc_values = val_acc.item()  # convert tensor scalar to Python float
+            results["val_acc"].append(val_acc_values)
 
         elapsed = time.time() - start_time
         results["val_time"].append(elapsed)
 
-        if (iter + 1) % print_every == 0:
+        if (iter + 1) % print_every == 0 or iter == 0:
             print(f"[Iteration {iter+1}/{niter} | Time {elapsed:5.1f}s] \t Validation Loss: {val_loss.item():.4f} | Validation Acc: {100*val_acc:.1f}%")
 
     print(f"===== Finished Training {model.__class__.__name__} =====\n")

@@ -30,6 +30,6 @@ def decode(indices, itoc):
 def load_data(encoded_path='data/encoded.pkl', device='cpu'):
     with open(encoded_path, 'rb') as f:
         data = pickle.load(f)
-    train = torch.tensor(data['train'], dtype=torch.long)
-    test = torch.tensor(data['val'], dtype=torch.long)
+    train = torch.tensor(data['train_data'], dtype=torch.long)
+    test = torch.tensor(data['test_data'], dtype=torch.long)
     return train, test, data['ctoi'], data['itoc'], data['vocab_size']

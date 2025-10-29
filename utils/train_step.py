@@ -81,7 +81,7 @@ def train_model(
             
             total_val_loss = 0
             total_val_acc = 0
-            val_iter = 100
+            val_iter = 500
             for _ in range(val_iter):
                 # --- Get validation batch ---
                 val_X, val_Y = get_batch(val_data, batch_size, seq_len)

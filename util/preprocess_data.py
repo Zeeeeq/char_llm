@@ -1,6 +1,7 @@
 # preprocess_data.py
-import os
+import os, sys
 import pickle
+from data_loader import encode
 
 def preprocess_text(train_file, test_file=None):
     os.makedirs('data', exist_ok=True)
@@ -20,8 +21,8 @@ def preprocess_text(train_file, test_file=None):
     itoc = {i: ch for i, ch in enumerate(chars)}
 
     # Encode text
-    train_data = [ctoi[c] for c in text_train]
-    test_data = [ctoi[c] for c in text_test]
+    train_data = encode(text_train, ctoi)
+    test_data = encode(text_test, ctoi)
 
     # Save preprocessed files
     with open('data/encoded.pkl', 'wb') as f:

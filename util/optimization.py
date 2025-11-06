@@ -53,7 +53,7 @@ def loss_and_metrics(logits, targets):
     return loss, {"loss": loss, "acc": acc_all, "acc_last": acc_last}
 
 
-def train_step(model, params, opt_state, x, y, tx):
+def train_step(model, params, opt_state, x, y, tx, key=None):
     """Single optimization step using optax optimizer.
 
     Args:
@@ -69,9 +69,14 @@ def train_step(model, params, opt_state, x, y, tx):
       metrics: dict of scalar metrics (loss, acc).
     """
     def loss_fn(params):
-        dropout_key = jax.random.PRNGKey(0)
-        logits = model.apply({"params": params}, x, deterministic=False, rngs={"dropout": dropout_key})
-        loss, metrics = loss_and_metrics(logits, y)
+        if key is None:
+          dropout_key = jax.random.PRNGKey(0)
+          logits = model.apply({"params": params}, x, deterministic=False, rngs={"dropout": dropout_key})
+          loss, metrics = loss_and_metrics(logits, y)
+        else:
+          _, dropout_key = jax.random.split(key)
+          logits = model.apply({"params": params}, x, deterministic=False, rngs={"dropout": dropout_key})
+          loss, metrics = loss_and_metrics(logits, y)
         return loss, metrics
 
     # compute gradients (loss is scalar, metrics is auxiliary)

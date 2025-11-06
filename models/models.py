@@ -34,7 +34,7 @@ class MLP(nn.Module):
 
         d_model: int
         mlp_ratio: int = 4
-        dropout_rate: float = 0.1
+        dropout_rate: float = 0.0
 
         @nn.compact
         def __call__(self, x, deterministic: bool = True):
@@ -63,7 +63,7 @@ class DecoderBlock(nn.Module):
     d_model: int
     n_heads: int
     mlp_ratio: int = 4
-    dropout_rate: float = 0.1
+    dropout_rate: float = 0.0
 
     @nn.compact
     def __call__(self, x, *, mask=None, deterministic: bool = True):
@@ -110,7 +110,7 @@ class DecoderOnlyTransformer(nn.Module):
     n_heads: int
     max_len: int
     mlp_ratio: int = 4
-    dropout_rate: float = 0.1
+    dropout_rate: float = 0.0
 
     def setup(self):
         # Token embedding table E with shape (V, D)

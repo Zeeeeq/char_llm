@@ -69,7 +69,8 @@ def train_step(model, params, opt_state, x, y, tx):
       metrics: dict of scalar metrics (loss, acc).
     """
     def loss_fn(params):
-        logits = model.apply({"params": params}, x)
+        dropout_key = jax.random.PRNGKey(0)
+        logits = model.apply({"params": params}, x, deterministic=False, rngs={"dropout": dropout_key})
         loss, metrics = loss_and_metrics(logits, y)
         return loss, metrics
 

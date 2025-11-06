@@ -6,9 +6,9 @@ from models import models
 
 
 # Model creation
-def create_train_state(rng, vocab_size=27, d_model=64, n_layers=6, n_heads=8, max_len=128):
+def create_train_state(rng, vocab_size=27, d_model=64, n_layers=6, n_heads=8, max_len=128, dropout_rate=0.0):
     # create a basic Transformer model
-    model = models.DecoderOnlyTransformer(vocab_size, d_model, n_layers, n_heads, max_len)
+    model = models.DecoderOnlyTransformer(vocab_size, d_model, n_layers, n_heads, max_len, dropout_rate=dropout_rate)
     # create a dummy input for initialization
     dummy = jnp.zeros((1, min(16, max_len)), dtype=jnp.int32)
     # pass the dummy input to the model to initialize the parameters

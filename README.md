@@ -1,7 +1,7 @@
 # char_llm
 Project on next-character prediction using Decoder-Only Transformer
 
-## Goal Of This Assignment
+## Goal Of This Project
 Implement and train a small transformer that learns the
 conditional distribution of the next character given a fixed-length
 context window of the preceding characters.

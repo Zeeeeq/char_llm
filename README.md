@@ -17,7 +17,7 @@ configuration for the final model.
 pip install -r requirements.txt
 ```
 
-## Data Preperation
+## Data Preparation
 
 ```sh
 python util/preprocess_data.py

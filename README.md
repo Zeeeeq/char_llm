@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 
 ## Data Preparation
-
+For convenience, we encode and save the dataset along with the character to index dictionary and vice versa
 ```sh
 python util/preprocess_data.py
 ```
